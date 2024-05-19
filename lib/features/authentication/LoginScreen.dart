@@ -6,14 +6,33 @@ import 'package:flutter/material.dart';
 import 'package:learning_app/core/model/User.dart';
 import 'package:learning_app/features/authentication/SignUpScreen.dart';
 import 'package:learning_app/main_screen.dart';
+import 'package:learning_app/utils.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../common/color_resource.dart';
 import '../../common/constant.dart';
 
-TextEditingController _tk_loginController = TextEditingController();
-TextEditingController _mk_loginController = TextEditingController();
+Future<void> _saveLoginInfo(String email, String password, bool save) async {
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (save) {
+    await prefs.setString('email', email);
+    await prefs.setString('password', password);
+    await prefs.setBool('save', save);
+  } else {
+    await prefs.remove('email');
+    await prefs.remove('password');
+    await prefs.remove('save');
+  }
+}
 
 void signIn(BuildContext context, String tk, String mk) async {
   try {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Utils.Loading();
+      },
+    );
     final auth = FirebaseAuth.instance;
     UserCredential userCredential = await auth.signInWithEmailAndPassword(
       email: tk,
@@ -21,18 +40,20 @@ void signIn(BuildContext context, String tk, String mk) async {
     );
     Constants.userId = userCredential.user!.uid;
     Constants.stateLogin = 1;
+
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => MainScreen()),
       (route) => false,
     );
   } catch (e) {
+    Navigator.pop(context);
     return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: Text('Thông báo'),
-          content: Text(e.toString()),
+          content: Text("Đăng nhập thất bại!"),
           actions: [
             TextButton(
               child: Text('OK'),
@@ -47,20 +68,44 @@ void signIn(BuildContext context, String tk, String mk) async {
   }
 }
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
+
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  bool _isChecked = true;
+  TextEditingController _tkLoginController = TextEditingController();
+  TextEditingController _mkLoginController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLoginInfo();
+  }
+
+  Future<void> _loadLoginInfo() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _tkLoginController.text = prefs.getString('email') ?? '';
+      _mkLoginController.text = prefs.getString('password') ?? '';
+      _isChecked = prefs.getBool('save') ?? false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    // _tk_loginController.text = "tes@gmail.com";
-    // _mk_loginController.text = "123456";
     return Container(
       decoration: BoxDecoration(
         image: DecorationImage(
           image: AssetImage('assets/bg.jpg'),
           fit: BoxFit.fitHeight,
-          colorFilter:
-              ColorFilter.mode(Colors.red.withOpacity(0.5), BlendMode.dstATop),
+          colorFilter: ColorFilter.mode(
+            Colors.red.withOpacity(0.5),
+            BlendMode.dstATop,
+          ),
         ),
       ),
       child: Scaffold(
@@ -75,8 +120,9 @@ class LoginScreen extends StatelessWidget {
               Positioned(
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(12),
-                      bottomLeft: Radius.circular(12)),
+                    bottomRight: Radius.circular(12),
+                    bottomLeft: Radius.circular(12),
+                  ),
                   child: Container(
                     color: ColorResources.mainBackGround(),
                     height: Constants.screenHeight * 2 / 3,
@@ -91,25 +137,24 @@ class LoginScreen extends StatelessWidget {
                               Text(
                                 "Welcome",
                                 style: TextStyle(
-                                    color: Colors.brown,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 32),
+                                  color: Colors.brown,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 32,
+                                ),
                               ),
                               Text(
                                 "Please log in your information",
                                 style: TextStyle(color: Colors.brown),
                               ),
-                              SizedBox(
-                                height: 15,
-                              ),
+                              SizedBox(height: 15),
                               TextField(
-                                controller: _tk_loginController,
+                                controller: _tkLoginController,
                                 decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color: Colors.black,
                                     ),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   labelText: "Email:",
                                   labelStyle: TextStyle(
@@ -120,18 +165,16 @@ class LoginScreen extends StatelessWidget {
                                   color: Colors.black,
                                 ),
                               ),
-                              SizedBox(
-                                height: 15,
-                              ),
+                              SizedBox(height: 15),
                               TextField(
                                 obscureText: true,
-                                controller: _mk_loginController,
+                                controller: _mkLoginController,
                                 decoration: InputDecoration(
                                   enabledBorder: OutlineInputBorder(
                                     borderSide: BorderSide(
                                       color: Colors.black,
                                     ),
-                                    borderRadius: BorderRadius.circular(20),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                   labelText: "Mật khẩu: ",
                                   labelStyle: TextStyle(
@@ -142,13 +185,31 @@ class LoginScreen extends StatelessWidget {
                                   color: Colors.black,
                                 ),
                               ),
-                              SizedBox(
-                                height: 20,
+                              SizedBox(height: 15),
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    activeColor: Colors.brown,
+                                    value: _isChecked,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _isChecked = value ?? false;
+                                      });
+                                    },
+                                  ),
+                                  Text("Lưu mật khẩu?"),
+                                ],
                               ),
+                              SizedBox(height: 20),
                               ElevatedButton(
                                 onPressed: () {
-                                  signIn(context, _tk_loginController.text,
-                                      _mk_loginController.text);
+                                  _saveLoginInfo(_tkLoginController.text,
+                                      _mkLoginController.text, _isChecked);
+                                  signIn(
+                                    context,
+                                    _tkLoginController.text,
+                                    _mkLoginController.text,
+                                  );
                                 },
                                 style: ElevatedButton.styleFrom(
                                   shape: StadiumBorder(),
@@ -164,22 +225,22 @@ class LoginScreen extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              SizedBox(
-                                height: 20,
-                              ),
+                              SizedBox(height: 20),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text("Not a member?"),
                                   TextButton(
-                                      onPressed: () {
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) =>
-                                                    SignUpScreen()));
-                                      },
-                                      child: Text("Register?")),
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => SignUpScreen(),
+                                        ),
+                                      );
+                                    },
+                                    child: Text("Register?"),
+                                  ),
                                 ],
                               ),
                             ],

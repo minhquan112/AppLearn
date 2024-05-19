@@ -50,8 +50,8 @@ class SignUpScreen extends StatelessWidget {
               Positioned(
                 child: ClipRRect(
                   borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(20),
-                      bottomLeft: Radius.circular(20)),
+                      bottomRight: Radius.circular(12),
+                      bottomLeft: Radius.circular(12)),
                   child: Container(
                     color: ColorResources.mainBackGround(),
                     height: Constants.screenHeight * 5 / 6,
@@ -85,7 +85,7 @@ class SignUpScreen extends StatelessWidget {
                                       borderSide: BorderSide(
                                         color: Colors.black,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     labelText: "Email:",
                                     labelStyle: TextStyle(
@@ -105,7 +105,7 @@ class SignUpScreen extends StatelessWidget {
                                       borderSide: BorderSide(
                                         color: Colors.black,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     labelText: "Họ và tên:",
                                     labelStyle: TextStyle(
@@ -125,7 +125,7 @@ class SignUpScreen extends StatelessWidget {
                                       borderSide: BorderSide(
                                         color: Colors.black,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     labelText: "Địa chỉ:",
                                     labelStyle: TextStyle(
@@ -146,7 +146,7 @@ class SignUpScreen extends StatelessWidget {
                                       borderSide: BorderSide(
                                         color: Colors.black,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     labelText: "Mật khẩu:",
                                     labelStyle: TextStyle(
@@ -167,7 +167,7 @@ class SignUpScreen extends StatelessWidget {
                                       borderSide: BorderSide(
                                         color: Colors.black,
                                       ),
-                                      borderRadius: BorderRadius.circular(20),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
                                     labelText: "Nhập lại mật khẩu:",
                                     labelStyle: TextStyle(
@@ -182,37 +182,86 @@ class SignUpScreen extends StatelessWidget {
                               ),
                               ElevatedButton(
                                 onPressed: () {
-                                  final auth = FirebaseAuth.instance;
-                                  auth
-                                      .createUserWithEmailAndPassword(
-                                          email: _tk_registerController.text,
-                                          password: _mk_registerController.text)
-                                      .then((userCredential) {
-                                    String userId = userCredential.user!.uid;
-                                    addUser(
-                                      userId,
-                                      _nameUserController.text,
-                                      _addressUserController.text,
-                                      _tk_registerController.text,
-                                    );
-                                    _tk_registerController.text = "";
+                                  if (_mk_registerController.text.length < 6) {
                                     _mk_registerController.text = "";
-                                  }).catchError((error) {});
-                                  Navigator.pop(context);
-                                  // Hiển thị thông báo đăng kí thành công
-                                  final snackBar = SnackBar(
-                                    content: Text('Đăng kí thành công!'),
-                                  );
-                                  ScaffoldMessenger.of(context)
-                                      .showSnackBar(snackBar);
-                                  // Đóng thông báo sau 2 giây
-                                  Timer(
-                                    Duration(seconds: 2),
-                                    () {
+                                    _verifyPassWordController.text = "";
+                                    final snackBar = SnackBar(
+                                      content: Text(
+                                          'Đăng kí lỗi do mật khẩu nhỏ hơn 6 kí tự'),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(snackBar);
+                                    // Đóng thông báo sau 2 giây
+                                    Timer(
+                                      Duration(seconds: 2),
+                                      () {
+                                        ScaffoldMessenger.of(context)
+                                            .hideCurrentSnackBar();
+                                      },
+                                    );
+                                  } else if (_mk_registerController.text !=
+                                      _verifyPassWordController.text) {
+                                    final snackBar = SnackBar(
+                                      content: Text(
+                                          'Đăng kí lỗi do xác nhận mật khẩu sai'),
+                                    );
+                                    ScaffoldMessenger.of(context)
+                                        .showSnackBar(snackBar);
+                                    // Đóng thông báo sau 2 giây
+                                    Timer(
+                                      Duration(seconds: 2),
+                                      () {
+                                        ScaffoldMessenger.of(context)
+                                            .hideCurrentSnackBar();
+                                      },
+                                    );
+                                  } else {
+                                    final auth = FirebaseAuth.instance;
+                                    auth
+                                        .createUserWithEmailAndPassword(
+                                            email: _tk_registerController.text,
+                                            password:
+                                                _mk_registerController.text)
+                                        .then((userCredential) {
+                                      String userId = userCredential.user!.uid;
+                                      addUser(
+                                        userId,
+                                        _nameUserController.text,
+                                        _addressUserController.text,
+                                        _tk_registerController.text,
+                                      );
+                                      _tk_registerController.text = "";
+                                      _mk_registerController.text = "";
+                                      Navigator.pop(context);
+                                      // Hiển thị thông báo đăng kí thành công
+                                      final snackBar = SnackBar(
+                                        content: Text('Đăng kí thành công!'),
+                                      );
                                       ScaffoldMessenger.of(context)
-                                          .hideCurrentSnackBar();
-                                    },
-                                  );
+                                          .showSnackBar(snackBar);
+                                      // Đóng thông báo sau 2 giây
+                                      Timer(
+                                        Duration(seconds: 2),
+                                        () {
+                                          ScaffoldMessenger.of(context)
+                                              .hideCurrentSnackBar();
+                                        },
+                                      );
+                                    }).catchError((error) {
+                                      final snackBar = SnackBar(
+                                        content: Text('Kiểm tra lại Internet hoặc điền đủ thông tin vào ô trống'),
+                                      );
+                                      ScaffoldMessenger.of(context)
+                                          .showSnackBar(snackBar);
+                                      Timer(
+                                        Duration(seconds: 2),
+                                        () {
+                                          ScaffoldMessenger.of(context)
+                                              .hideCurrentSnackBar();
+                                        },
+                                      );
+                                    });
+                                  }
                                 },
                                 style: ElevatedButton.styleFrom(
                                   shape: StadiumBorder(),

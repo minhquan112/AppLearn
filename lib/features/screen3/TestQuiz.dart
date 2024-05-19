@@ -4,9 +4,10 @@ import 'package:learning_app/features/screen3/model/Quiz.dart';
 import 'package:photo_view/photo_view.dart';
 
 class TestQuiz extends StatefulWidget {
+  String title;
   List<Quiz> quizList;
 
-  TestQuiz({required this.quizList, super.key});
+  TestQuiz({required this.title, required this.quizList, super.key});
 
   @override
   State<TestQuiz> createState() => _TestQuizState();
@@ -21,7 +22,9 @@ class _TestQuizState extends State<TestQuiz> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
-        appBar: AppBar(),
+        appBar: AppBar(
+          title: Text(widget.title),
+        ),
         body: ListView.builder(
           itemCount: questionList.length,
           itemBuilder: (context, index) {

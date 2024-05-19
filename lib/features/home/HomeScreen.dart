@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:learning_app/common/constant.dart';
 import 'package:learning_app/features/authentication/LoginScreen.dart';
+import 'package:learning_app/features/home/DescriptionScreen.dart';
 import 'package:learning_app/features/home/HomeProvider.dart';
 import 'package:learning_app/features/home/LearnVocabularySceen.dart';
+import 'package:learning_app/features/home/TermOfUseScreen.dart';
 import 'package:learning_app/features/home/model/Content.dart';
 import 'package:learning_app/features/home/model/Process.dart';
 import 'package:learning_app/main_screen.dart';
@@ -80,11 +82,7 @@ class _HomeScreen extends State<HomeScreen> {
                         ),
                       );
                     } else {
-                      return Container(
-                        height: 50,
-                        width: 50,
-                        child: Utils.Loading(),
-                      );
+                      return Utils.Loading();
                     }
                   }),
         ],
@@ -163,7 +161,12 @@ class _HomeScreen extends State<HomeScreen> {
               child: Image.asset("assets/iconapp2.png"),
             ),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => TermOfUserScreen()));
+              },
               leading: Icon(
                 Icons.bookmark_added,
                 color: Colors.black,
@@ -179,7 +182,12 @@ class _HomeScreen extends State<HomeScreen> {
             ),
             SizedBox(height: 5),
             ListTile(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => DescriptionScreen()));
+              },
               leading: Icon(
                 Icons.description_rounded,
                 color: Colors.black,
@@ -254,11 +262,7 @@ class _HomeScreen extends State<HomeScreen> {
                           ],
                         );
                       } else {
-                        return Container(
-                          height: 50,
-                          width: 50,
-                          child: Utils.Loading(),
-                        );
+                        return Utils.Loading();
                       }
                     })
           ],
@@ -276,7 +280,9 @@ class _HomeScreen extends State<HomeScreen> {
             context,
             MaterialPageRoute(
               builder: (context) => LearnVocabularyScreen(
-                  vocabularies: item.vocabulary, content: item),
+                  indexColor: index,
+                  vocabularies: item.vocabulary,
+                  content: item),
             ),
           );
         },

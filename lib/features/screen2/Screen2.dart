@@ -45,11 +45,7 @@ class _Screen2State extends State<Screen2> {
                   }),
             );
           } else {
-            return Container(
-              height: 50,
-              width: 50,
-              child: Utils.Loading(),
-            );
+            return Utils.Loading();
           }
         },
       ),
@@ -64,8 +60,9 @@ class _Screen2State extends State<Screen2> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) =>
-                      TestScreen(questionList: item.list_question)));
+                  builder: (context) => TestScreen(
+                      title: "Đề thi số ${index + 1}",
+                      questionList: item.list_question)));
         },
         child: Container(
           padding: EdgeInsets.only(right: 5, left: 10, top: 8, bottom: 8),

@@ -46,11 +46,7 @@ class _Screen3State extends State<Screen3> {
               ),
             );
           } else {
-            return Container(
-              height: 50,
-              width: 50,
-              child: Utils.Loading(),
-            );
+            return Utils.Loading();
           }
         },
       ),
@@ -65,7 +61,8 @@ class _Screen3State extends State<Screen3> {
           Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) => TestQuiz(quizList: item.list_quiz)));
+                  builder: (context) =>
+                      TestQuiz(title: item.title, quizList: item.list_quiz)));
         },
         child: Container(
           padding: EdgeInsets.only(right: 5, left: 10, top: 8, bottom: 8),

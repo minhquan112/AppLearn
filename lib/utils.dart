@@ -37,11 +37,14 @@ class Utils {
       child: Lottie.asset('assets/404.json'),
     );
   }
+
   static Widget Loading() {
-    return Container(
-      height: Constants.screenHeight,
-      width: Constants.screenWidth,
-      child: Lottie.asset('assets/loading.json'),
+    return Center(
+      child: Container(
+        height: 30,
+        width: 30,
+        child: Lottie.asset('assets/loading.json'),
+      ),
     );
   }
 }

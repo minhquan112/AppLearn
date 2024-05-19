@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/widgets.dart';
 import 'package:learning_app/common/color_resource.dart';
 import 'package:learning_app/common/constant.dart';
 import 'package:learning_app/features/home/HomeProvider.dart';
@@ -14,11 +14,22 @@ import 'package:learning_app/features/home/model/Vocabulary.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
 
+List<Color> colors = [
+  Colors.cyan,
+  Colors.yellow,
+  Colors.deepOrangeAccent,
+  Colors.blueAccent,
+  Colors.lightGreen,
+  Colors.purple
+];
+
 class LearnVocabularyScreen extends StatefulWidget {
+  int indexColor;
   final List<Vocabulary> vocabularies;
   final Content content;
 
   LearnVocabularyScreen({
+    required this.indexColor,
     required this.vocabularies,
     required this.content,
     Key? key,
@@ -87,104 +98,103 @@ class _LearnVocabularyScreenState extends State<LearnVocabularyScreen> {
             padding: EdgeInsets.only(top: 10),
             child: Container(
               height: Constants.screenHeight / 3,
-              child: Image.network(widget.content.image),
+              width: Constants.screenWidth,
+              child: Image.network(
+                widget.content.image,
+                fit: BoxFit.contain,
+              ),
             ),
           ),
-          CarouselSlider.builder(
-            itemCount: _vocabularies.length,
-            itemBuilder: (context, index, pageIndex) {
-              Vocabulary item = _vocabularies[index];
-              return Padding(
-                padding: EdgeInsets.only(top: 60, left: 10, right: 10),
-                child: Container(
-                  width: Constants.screenWidth - 30,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    color: ColorResources.vocabularyItem(),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(height: 10),
-                      Text(
-                        item.name,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+          Expanded(
+            child: Container(
+              child: ListView.builder(
+                itemCount: _vocabularies.length,
+                itemBuilder: (context, index) {
+                  Vocabulary item = _vocabularies[index];
+                  return Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Container(
+                      width: Constants.screenWidth - 30,
+                      height: Constants.screenHeight / 5,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: colors[widget.indexColor % 6],
                       ),
-                      Text(item.spell),
-                      SizedBox(height: 20),
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: () {
-                                playSound(item.sound);
-                              },
-                              icon: Icon(Icons.volume_up_sharp),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 10),
+                          Text(
+                            item.name,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
-                            isRecording == true
-                                ? IconButton(
-                                    onPressed: () {
-                                      stopRecord();
-                                    },
-                                    icon: Icon(Icons.mic_off_sharp),
-                                  )
-                                : IconButton(
-                                    onPressed: () {
-                                      startRecord();
-                                    },
-                                    icon: Icon(Icons.mic_none_outlined),
-                                  ),
-                            IconButton(
-                              onPressed: () {
-                                playRecord();
-                              },
-                              icon: Icon(Icons.play_arrow_rounded),
-                            ),
-                            Constants.stateLogin == 0
-                                ? Text("")
-                                : IconButton(
-                                    onPressed: () {
-                                      if (viewmodel.dataSaveCount <
-                                          widget.vocabularies.length)
-                                        viewmodel.dataSaveCount++;
-                                      updateProcessToFirebase();
-                                      final snackBar = SnackBar(
-                                        content: Text('Đánh dấu đã học'),
-                                      );
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(snackBar);
-                                      Timer(
-                                        Duration(seconds: 2),
-                                        () {
-                                          ScaffoldMessenger.of(context)
-                                              .hideCurrentSnackBar();
+                          ),
+                          Text(item.spell),
+                          SizedBox(height: 20),
+                          Expanded(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    playSound(item.sound);
+                                  },
+                                  icon: Icon(Icons.volume_up_sharp),
+                                ),
+                                isRecording == true
+                                    ? IconButton(
+                                        onPressed: () {
+                                          stopRecord();
                                         },
-                                      );
-                                    },
-                                    icon: Icon(Icons.star),
-                                  )
-                          ],
-                        ),
+                                        icon: Icon(Icons.mic_off_sharp),
+                                      )
+                                    : IconButton(
+                                        onPressed: () {
+                                          startRecord();
+                                        },
+                                        icon: Icon(Icons.mic_none_outlined),
+                                      ),
+                                IconButton(
+                                  onPressed: () {
+                                    playRecord();
+                                  },
+                                  icon: Icon(Icons.play_arrow_rounded),
+                                ),
+                                Constants.stateLogin == 0
+                                    ? Text("")
+                                    : IconButton(
+                                        onPressed: () {
+                                          if (viewmodel.dataSaveCount <
+                                              widget.vocabularies.length)
+                                            viewmodel.dataSaveCount++;
+                                          updateProcessToFirebase();
+                                          final snackBar = SnackBar(
+                                            content: Text('Đánh dấu đã học'),
+                                          );
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(snackBar);
+                                          Timer(
+                                            Duration(seconds: 2),
+                                            () {
+                                              ScaffoldMessenger.of(context)
+                                                  .hideCurrentSnackBar();
+                                            },
+                                          );
+                                        },
+                                        icon: Icon(Icons.star),
+                                      )
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              );
-            },
-            options: CarouselOptions(
-              aspectRatio: 16 / 10,
-              autoPlay: false,
-              enableInfiniteScroll: true,
-              autoPlayInterval: Duration(milliseconds: 3000),
-              viewportFraction: 0.9,
-              onPageChanged: (index, result) {
-                _audioPlayer.stop();
-              },
+                    ),
+                  );
+                },
+              ),
             ),
           ),
         ],
